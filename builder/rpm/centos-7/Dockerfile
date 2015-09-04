@@ -33,5 +33,9 @@ RUN yum install -y \
     wget \
     zlib-devel
 
+RUN \
+    groupadd builder && \
+    useradd builder -g builder -u 1000
+
 ADD build.sh /build.sh
 ADD pants.ini /pants.ini

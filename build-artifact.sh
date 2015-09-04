@@ -40,7 +40,7 @@ docker run \
   --rm \
   -e AURORA_VERSION=$AURORA_VERSION \
   -v "$(pwd)/specs:/specs:ro" \
-  -v "$(realpath $RELEASE_TAR):/src.tar.gz:ro" \
+  -v "$RELEASE_TAR:/src.tar.gz:ro" \
   -v "$ARTIFACT_DIR:/dist" \
   -t "$IMAGE_NAME" /build.sh
 
