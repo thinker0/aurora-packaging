@@ -59,6 +59,19 @@ License:       ASL 2.0
 URL:           https://%{name}.apache.org/
 
 Source0:       https://github.com/apache/%{name}/archive/%{version}/%{name}.tar.gz
+Source1:       aurora.service
+Source2:       thermos-observer.service
+Source3:       aurora.init.sh
+Source4:       thermos-observer.init.sh
+Source5:       aurora.startup.sh
+Source6:       thermos-observer.startup.sh
+Source7:       aurora.sysconfig
+Source8:       thermos-observer.sysconfig
+Source9:       aurora.logrotate
+Source10:      thermos-observer.logrotate
+Source11:      clusters.json
+Source12:      aurora.monit
+Source13:      thermos-observer.monit
 
 BuildRequires: apr-devel
 BuildRequires: cyrus-sasl-devel
@@ -119,6 +132,7 @@ Requires: cyrus-sasl
 %if 0%{?rhel} && 0%{?rhel} < 7
 Requires: daemonize
 Requires: docker-io
+Requires: monit
 %else
 Requires: docker
 %endif
@@ -195,6 +209,7 @@ mkdir -p %{buildroot}%{_localstatedir}/log/thermos
 mkdir -p %{buildroot}%{_localstatedir}/run/thermos
 mkdir -p %{buildroot}%{_sysconfdir}/%{name}
 mkdir -p %{buildroot}%{_sysconfdir}/init.d
+mkdir -p %{buildroot}%{_sysconfdir}/monit.d
 mkdir -p %{buildroot}%{_sysconfdir}/systemd/system
 mkdir -p %{buildroot}%{_sysconfdir}/logrotate.d
 mkdir -p %{buildroot}%{_sysconfdir}/sysconfig
@@ -227,6 +242,8 @@ install -m 644 build-support/packaging/rpm/thermos-observer.logrotate %{buildroo
 
 install -m 644 build-support/packaging/rpm/clusters.json %{buildroot}%{_sysconfdir}/%{name}/clusters.json
 
+install -m 644 %{SOURCE12} %{buildroot}%{_sysconfdir}/monit.d/aurora.conf
+install -m 644 %{SOURCE13} %{buildroot}%{_sysconfdir}/monit.d/thermos-observer.conf
 
 %pre
 getent group %{AURORA_GROUP} > /dev/null || groupadd -r %{AURORA_GROUP}
@@ -295,6 +312,7 @@ exit 0
 %{_sysconfdir}/systemd/system/%{name}.service
 %else
 %{_sysconfdir}/init.d/%{name}
+%config(noreplace) %{_sysconfdir}/monit.d/%{name}.conf
 %endif
 %config(noreplace) %{_sysconfdir}/logrotate.d/%{name}
 %config(noreplace) %{_sysconfdir}/sysconfig/%{name}
@@ -320,6 +338,7 @@ exit 0
 %{_sysconfdir}/systemd/system/thermos-observer.service
 %else
 %{_sysconfdir}/init.d/thermos-observer
+%config(noreplace) %{_sysconfdir}/monit.d/thermos-observer.conf
 %endif
 %config(noreplace) %{_sysconfdir}/logrotate.d/thermos-observer
 %config(noreplace) %{_sysconfdir}/sysconfig/thermos-observer
