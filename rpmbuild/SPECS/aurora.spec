@@ -30,7 +30,7 @@
 %endif
 
 %if %{?!GRADLE_VERSION:1}0
-%global GRADLE_VERSION 2.5
+%global GRADLE_VERSION 2.6
 %endif
 
 %if %{?!JAVA_VERSION:!}0
@@ -38,7 +38,7 @@
 %endif
 
 %if %{?!MESOS_VERSION:1}0
-%global MESOS_VERSION 0.23.0
+%global MESOS_VERSION 0.22.0
 %endif
 
 %if %{?!PEX_BINARIES:1}0
@@ -99,7 +99,7 @@ BuildRequires: zlib-devel
 Requires:      daemonize
 %endif
 Requires:      java-%{JAVA_VERSION}-openjdk
-Requires:      mesos = %{MESOS_VERSION}
+Requires:      mesos >= %{MESOS_VERSION}
 
 
 %description
@@ -136,7 +136,7 @@ Requires: monit
 %else
 Requires: docker
 %endif
-Requires: mesos = %{MESOS_VERSION}
+Requires: mesos >= %{MESOS_VERSION}
 %if 0%{?rhel} && 0%{?rhel} < 7
 Requires: python27
 %else
@@ -174,6 +174,7 @@ wget %{GRADLE_BASEURL}/gradle-%{GRADLE_VERSION}-bin.zip
 unzip gradle-%{GRADLE_VERSION}-bin.zip
 
 # Builds the Aurora scheduler.
+sed -i "s/<=/</g" buildSrc/build.gradle > buildSrc/build.gradle
 ./gradle-%{GRADLE_VERSION}/bin/gradle installDist
 
 # Configures pants to use our distributed platform-specific eggs.
@@ -181,10 +182,10 @@ unzip gradle-%{GRADLE_VERSION}-bin.zip
 export PANTS_CONFIG_OVERRIDE=/pants.ini
 
 # Builds Aurora client PEX binaries.
-./pants binary src/main/python/apache/aurora/client/cli:kaurora
-mv dist/kaurora.pex dist/aurora.pex
-./pants binary src/main/python/apache/aurora/admin:kaurora_admin
-mv dist/kaurora_admin.pex dist/aurora_admin.pex
+./pants binary src/main/python/apache/aurora/client/cli:aurora
+#mv dist/kaurora.pex dist/aurora.pex
+./pants binary src/main/python/apache/aurora/admin:aurora_admin
+#mv dist/kaurora_admin.pex dist/aurora_admin.pex
 
 # Builds Aurora Thermos and GC executor PEX binaries.
 ./pants binary src/main/python/apache/aurora/executor/bin:thermos_executor

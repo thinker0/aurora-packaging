@@ -1,1 +1,6 @@
 dist/
+.vagrant
+rpmbuild/BUILD
+rpmbuild/BUILDROOT
+rpmbuild/RPMS
+rpmbuild/SRPMS
