@@ -23,8 +23,8 @@ Vagrant.require_version ">= 1.5.0"
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.hostname = "aurora.local"
-  #config.vm.box = "ubuntu/trusty64"
-  config.vm.box = "hansode/centos-6.6-x86_64"
+  #config.vm.box = "hansode/centos-6.6-x86_64"
+  config.vm.box = "bento/centos-6.7"
 
   config.vm.define "devcluster" do |dev|
     dev.vm.network :private_network, ip: "192.168.33.7"
