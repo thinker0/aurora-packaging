@@ -38,7 +38,7 @@
 %endif
 
 %if %{?!MESOS_VERSION:1}0
-%global MESOS_VERSION 0.22.0
+%global MESOS_VERSION 0.25.0
 %endif
 
 %if %{?!PEX_BINARIES:1}0
@@ -52,7 +52,7 @@
 
 Name:          aurora
 Version:       %{AURORA_VERSION}
-Release:       2%{?dist}.aurora
+Release:       3%{?dist}.aurora
 Summary:       A Mesos framework for scheduling and executing long-running services and cron jobs.
 Group:         Applications/System
 License:       ASL 2.0
@@ -70,8 +70,8 @@ Source8:       thermos-observer.sysconfig
 Source9:       aurora.logrotate
 Source10:      thermos-observer.logrotate
 Source11:      clusters.json
-Source12:      aurora.monit
-Source13:      thermos-observer.monit
+#Source12:      aurora.monit
+#Source13:      thermos-observer.monit
 
 BuildRequires: apr-devel
 BuildRequires: cyrus-sasl-devel
@@ -166,16 +166,18 @@ export XDG_DATA_DIRS=/opt/rh/python27/root/usr/share${XDG_DATA_DIRS:+:${XDG_DATA
 export PKG_CONFIG_PATH=/opt/rh/python27/root/usr/lib64/pkgconfig${PKG_CONFIG_PATH:+:${PKG_CONFIG_PATH}}
 %endif
 
+mkdir -p third_party
+pushd third_party
+  #wget -c https://svn.apache.org/repos/asf/aurora/3rdparty/ubuntu/trusty64/python/mesos.native-%{MESOS_VERSION}-py2.7-linux-x86_64.egg
+  #wget -c https://svn.apache.org/repos/asf/aurora/3rdparty/centos/6/python/mesos.native-0.24.0-py2.7-linux-x86_64.egg
+  wget -c http://pi-yum2.daumcorp.com/aurora/centos/6/python/mesos.native-0.25.0-py2.7-linux-x86_64.egg
+popd
+
 # Preferences Java 1.8 over any other Java version.
 export PATH=/usr/lib/jvm/java-1.8.0/bin:${PATH}
 
-# Downloads Gradle executable.
-wget %{GRADLE_BASEURL}/gradle-%{GRADLE_VERSION}-bin.zip
-unzip gradle-%{GRADLE_VERSION}-bin.zip
-
-# Builds the Aurora scheduler.
-sed -i "s/<=/</g" buildSrc/build.gradle > buildSrc/build.gradle
-./gradle-%{GRADLE_VERSION}/bin/gradle installDist
+sed -i "s/0.22.0/0.25.0/g" 3rdparty/python/requirements.txt
+grep '0.25.0' 3rdparty/python/requirements.txt
 
 # Configures pants to use our distributed platform-specific eggs.
 # This avoids building mesos to produce them.
@@ -196,6 +198,14 @@ export PANTS_CONFIG_OVERRIDE=/pants.ini
 # Packages the Thermos runner within the Thermos executor.
 build-support/embed_runner_in_executor.py
 
+# Downloads Gradle executable.
+wget %{GRADLE_BASEURL}/gradle-%{GRADLE_VERSION}-bin.zip
+unzip gradle-%{GRADLE_VERSION}-bin.zip
+
+# Builds the Aurora scheduler.
+sed -i "s/<=/</g" buildSrc/build.gradle > buildSrc/build.gradle
+./gradle-%{GRADLE_VERSION}/bin/gradle installDist
+
 %install
 rm -rf $RPM_BUILD_ROOT
 
@@ -210,7 +220,7 @@ mkdir -p %{buildroot}%{_localstatedir}/log/thermos
 mkdir -p %{buildroot}%{_localstatedir}/run/thermos
 mkdir -p %{buildroot}%{_sysconfdir}/%{name}
 mkdir -p %{buildroot}%{_sysconfdir}/init.d
-mkdir -p %{buildroot}%{_sysconfdir}/monit.d
+#mkdir -p %{buildroot}%{_sysconfdir}/monit.d
 mkdir -p %{buildroot}%{_sysconfdir}/systemd/system
 mkdir -p %{buildroot}%{_sysconfdir}/logrotate.d
 mkdir -p %{buildroot}%{_sysconfdir}/sysconfig
@@ -243,8 +253,8 @@ install -m 644 build-support/packaging/rpm/thermos-observer.logrotate %{buildroo
 
 install -m 644 build-support/packaging/rpm/clusters.json %{buildroot}%{_sysconfdir}/%{name}/clusters.json
 
-install -m 644 %{SOURCE12} %{buildroot}%{_sysconfdir}/monit.d/aurora.conf
-install -m 644 %{SOURCE13} %{buildroot}%{_sysconfdir}/monit.d/thermos-observer.conf
+#install -m 644 %{SOURCE12} %{buildroot}%{_sysconfdir}/monit.d/aurora.conf
+#install -m 644 %{SOURCE13} %{buildroot}%{_sysconfdir}/monit.d/thermos-observer.conf
 
 %pre
 getent group %{AURORA_GROUP} > /dev/null || groupadd -r %{AURORA_GROUP}
@@ -313,7 +323,7 @@ exit 0
 %{_sysconfdir}/systemd/system/%{name}.service
 %else
 %{_sysconfdir}/init.d/%{name}
-%config(noreplace) %{_sysconfdir}/monit.d/%{name}.conf
+#%config(noreplace) %{_sysconfdir}/monit.d/%{name}.conf
 %endif
 %config(noreplace) %{_sysconfdir}/logrotate.d/%{name}
 %config(noreplace) %{_sysconfdir}/sysconfig/%{name}
@@ -339,7 +349,7 @@ exit 0
 %{_sysconfdir}/systemd/system/thermos-observer.service
 %else
 %{_sysconfdir}/init.d/thermos-observer
-%config(noreplace) %{_sysconfdir}/monit.d/thermos-observer.conf
+#%config(noreplace) %{_sysconfdir}/monit.d/thermos-observer.conf
 %endif
 %config(noreplace) %{_sysconfdir}/logrotate.d/thermos-observer
 %config(noreplace) %{_sysconfdir}/sysconfig/thermos-observer
