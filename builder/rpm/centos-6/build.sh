@@ -26,6 +26,7 @@ cd rpm
 # Replace hyphens in version ID.
 export AURORA_VERSION=$(echo $AURORA_VERSION | tr '-' '_')
 export JAVA_HOME=/usr/lib/jvm/java-1.8.0
+
 make srpm
 yum-builddep -y ../../../dist/rpmbuild/SRPMS/*
 make rpm
