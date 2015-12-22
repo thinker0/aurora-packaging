@@ -14,7 +14,7 @@
 
 # Overridable variables;
 %if %{?!AURORA_VERSION:1}0
-%global AURORA_VERSION 0.9.0
+%global AURORA_VERSION 0.10.0
 %endif
 
 %if %{?!AURORA_USER:1}0
@@ -38,7 +38,7 @@
 %endif
 
 %if %{?!MESOS_VERSION:1}0
-%global MESOS_VERSION 0.23.0
+%global MESOS_VERSION 0.25.0
 %endif
 
 %if %{?!PEX_BINARIES:1}0
@@ -97,7 +97,7 @@ BuildRequires: zlib-devel
 Requires:      daemonize
 %endif
 Requires:      java-%{JAVA_VERSION}
-Requires:      mesos = %{MESOS_VERSION}
+Requires:      mesos >= %{MESOS_VERSION}
 
 
 %description

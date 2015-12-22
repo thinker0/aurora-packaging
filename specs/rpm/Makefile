@@ -22,6 +22,7 @@ SOURCE_TARGET ?= $(RPM_TOPDIR)/rpmbuild/SOURCES/aurora.tar.gz
 
 AURORA_VERSION ?= $(shell cat $(TOPDIR)/.auroraversion | tr '-' '.')
 MESOS_VERSION ?= $(shell sed -n 's/.*mesos\.native==\(.*\)/\1/p' $(TOPDIR)/3rdparty/python/requirements.txt)
+MESOS_VERSION = 0.25.0
 
 
 PHONY: all nightly_version release_version get_source_target clean mkdir srpm nightly_srpm nightly_rpm release_srpm release_rpm tar_source
