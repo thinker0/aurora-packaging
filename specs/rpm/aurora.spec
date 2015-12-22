@@ -96,7 +96,7 @@ BuildRequires: zlib-devel
 %if 0%{?rhel} && 0%{?rhel} < 7
 Requires:      daemonize
 %endif
-Requires:      java-%{JAVA_VERSION}
+Requires:      java-%{JAVA_VERSION}-headless
 Requires:      mesos >= %{MESOS_VERSION}
 
 
@@ -338,5 +338,8 @@ exit 0
 
 
 %changelog
+* Wed Dec 2 2015 Bill Farner <wfarner@apache.org> 0.10.0-1.el7
+- Updated to Apache Aurora 0.10.0
+
 * Mon Aug 31 2015 Bill Farner <wfarner@apache.org> 0.9.0-1.el7
 - Apache Aurora 0.9.0
