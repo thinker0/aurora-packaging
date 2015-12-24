@@ -12,6 +12,7 @@
 #
 FROM centos:6
 RUN yum install -y centos-release-SCL
+RUN yum update -y
 RUN yum install -y \
     make \
     rpm-build \
@@ -33,6 +34,7 @@ RUN yum install -y \
     tar \
     unzip \
     wget \
+    which \
     zlib-devel
 
 ADD build.sh /build.sh
