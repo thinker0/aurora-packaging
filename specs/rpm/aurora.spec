@@ -58,7 +58,7 @@ Group:         Applications/System
 License:       ASL 2.0
 URL:           https://aurora.apache.org/
 
-Source0:       https://github.com/apache/aurora/archive/%{version}/aurora.tar.gz
+Source0:       https://github.com/apache/aurora/archive/rel/%{version}.tar.gz
 Source1:       aurora.service
 Source2:       thermos-observer.service
 Source3:       aurora.init.sh
@@ -126,14 +126,7 @@ schedulers.
 Summary: Mesos executor that runs and monitors tasks scheduled by the Aurora scheduler
 Group: Applications/System
 
-Requires: cyrus-sasl
-%if 0%{?rhel} && 0%{?rhel} < 7
-Requires: daemonize
-Requires: docker-io
-%else
-Requires: docker
-%endif
-Requires: mesos
+Requires: mesos = %{MESOS_VERSION}
 %if 0%{?rhel} && 0%{?rhel} < 7
 Requires: python27
 %else

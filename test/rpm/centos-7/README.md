@@ -2,30 +2,53 @@
 
 ## Install packages
 
-# Within vagrant install vagrant scp
-vagrant plugin install vagrant-scp
+Two methods are described, one for installing locally built packages, the other
+for installing released packages or release candidate packages.
 
-# Then scp over the newly built packages
-vagrant scp \
-    ~/aurora-packaging/artifacts/aurora-centos-7/dist/rpmbuild/SRPMS/aurora-scheduler-0.12.0-1.el7.centos.aurora.src.rpm \
-    aurora_centos_7:aurora-scheduler-0.12.0-1.el7.centos.aurora.src.rpm
+### Locally built
 
-# Install each rpm via rpm –ivh aurora-scheduler-0.12.0-1.el7.centos.aurora.src.rpm
+#### Install vagrant scp
 
-### Initialize and start
+    vagrant plugin install vagrant-scp
 
+#### Then scp over the newly built packages
+
+    for rpm in ../../../artifacts/aurora-centos-7/dist/rpmbuild/RPMS/x86_64/*.rpm; do
+      vagrant scp $rpm aurora_centos_7:$(basename $rpm)
+    done
+
+#### Install each rpm
+
+    vagrant ssh -- -L8081:localhost:8081 -L1338:localhost:1338
+    sudo yum install -y *.rpm
+
+### Released
+
+    vagrant ssh -- -L8081:localhost:8081 -L1338:localhost:1338
+    version=0.12.0
+    pkg_root="https://apache.bintray.com/aurora/centos-7/"
+    for rpm in \
+        aurora-scheduler-${version}-1.el7.centos.aurora.x86_64.rpm \
+        aurora-executor-${version}-1.el7.centos.aurora.x86_64.rpm \
+        aurora-tools-${version}-1.el7.centos.aurora.x86_64.rpm; do
+      wget $pkg_root/$rpm
+      sudo yum install -y $rpm
+    done
+
+## Initialize and start
+
+    sudo -u aurora mkdir -p /var/lib/aurora/scheduler/db
     sudo -u aurora mesos-log initialize --path=/var/lib/aurora/scheduler/db
     sudo systemctl start aurora
-
-The second command alters the ZooKeeper path that the mesos distribution registers at.
+    sudo systemctl start thermos-observer
 
 ## Create a job
 
     echo "
     task = SequentialTask(
       processes = [Process(name = 'hello', cmdline = 'echo hello')],
-      resources = Resources(cpu = 1.0, ram = 128*MB, disk = 128*MB))
+      resources = Resources(cpu = 0.5, ram = 128*MB, disk = 128*MB))
 
     jobs = [Service(
-      task = task, cluster = 'main', role = 'www-data', environment = 'prod', name = 'hello')]" > hello_world.aurora
-    aurora job create main/www-data/prod/hello hello_world.aurora
+      task = task, cluster = 'main', role = 'vagrant', environment = 'prod', name = 'hello')]" > hello_world.aurora
+    aurora job create main/vagrant/prod/hello hello_world.aurora
