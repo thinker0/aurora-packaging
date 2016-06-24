@@ -7,25 +7,22 @@ for installing released packages or release candidate packages.
 
 ### Locally built
 
-#### Install vagrant scp
-
+    # Install vagrant scp
     vagrant plugin install vagrant-scp
 
-#### Then scp over the newly built packages
-
+    # Scp over the newly built packages
     for rpm in ../../../artifacts/aurora-centos-7/dist/rpmbuild/RPMS/x86_64/*.rpm; do
-      vagrant scp $rpm aurora_centos_7:$(basename $rpm)
+      vagrant scp $rpm :$(basename $rpm)
     done
 
-#### Install each rpm
-
+    # Install each rpm
     vagrant ssh -- -L8081:localhost:8081 -L1338:localhost:1338
     sudo yum install -y *.rpm
 
 ### Released
 
     vagrant ssh -- -L8081:localhost:8081 -L1338:localhost:1338
-    version=0.12.0
+    version=0.13.0
     pkg_root="https://apache.bintray.com/aurora/centos-7/"
     for rpm in \
         aurora-scheduler-${version}-1.el7.centos.aurora.x86_64.rpm \
@@ -39,16 +36,28 @@ for installing released packages or release candidate packages.
 
     sudo -u aurora mkdir -p /var/lib/aurora/scheduler/db
     sudo -u aurora mesos-log initialize --path=/var/lib/aurora/scheduler/db
-    sudo systemctl start aurora
-    sudo systemctl start thermos-observer
+    sudo systemctl start aurora-scheduler
+    sudo systemctl start thermos
+
+To make the Thermos observer work, you will have to follow the instructions of our
+[Install Guide](https://github.com/apache/aurora/blob/master/docs/operations/installation.md#configuration).
+
 
 ## Create a job
 
-    echo "
-    task = SequentialTask(
-      processes = [Process(name = 'hello', cmdline = 'echo hello')],
-      resources = Resources(cpu = 0.5, ram = 128*MB, disk = 128*MB))
+```
+echo "
+task = SequentialTask(
+  processes = [Process(name = 'hello', cmdline = 'echo hello')],
+  resources = Resources(cpu = 0.5, ram = 128*MB, disk = 128*MB))
+jobs = [Service(
+  task = task, cluster = 'example', role = 'vagrant', environment = 'prod', name = 'hello')]" > hello_world.aurora
 
-    jobs = [Service(
-      task = task, cluster = 'main', role = 'vagrant', environment = 'prod', name = 'hello')]" > hello_world.aurora
-    aurora job create main/vagrant/prod/hello hello_world.aurora
+aurora job create example/vagrant/prod/hello hello_world.aurora
+```
+
+## Troubleshooting
+
+* Mesos: `/var/log/mesos`
+* Aurora scheduler: `sudo journalctl -u aurora-scheduler`
+* Aurora observer: `sudo journalctl -u thermos`

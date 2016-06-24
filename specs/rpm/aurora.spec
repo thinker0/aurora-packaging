@@ -14,7 +14,11 @@
 
 # Overridable variables;
 %if %{?!AURORA_VERSION:1}0
-%global AURORA_VERSION 0.10.0
+%global AURORA_VERSION 0.13.0
+%endif
+
+%if %{?!AURORA_INTERNAL_VERSION:1}0
+%global AURORA_INTERNAL_VERSION %{AURORA_VERSION}
 %endif
 
 %if %{?!AURORA_USER:1}0
@@ -38,7 +42,7 @@
 %endif
 
 %if %{?!MESOS_VERSION:1}0
-%global MESOS_VERSION 0.25.0
+%global MESOS_VERSION 0.26.0
 %endif
 
 %if %{?!PEX_BINARIES:1}0
@@ -58,18 +62,19 @@ Group:         Applications/System
 License:       ASL 2.0
 URL:           https://aurora.apache.org/
 
-Source0:       https://github.com/apache/aurora/archive/rel/%{version}.tar.gz
-Source1:       aurora.service
-Source2:       thermos-observer.service
-Source3:       aurora.init.sh
-Source4:       thermos-observer.init.sh
-Source5:       aurora.startup.sh
-Source6:       thermos-observer.startup.sh
-Source7:       aurora.sysconfig
-Source8:       thermos-observer.sysconfig
-Source9:       aurora.logrotate
-Source10:      thermos-observer.logrotate
+Source0:       http://www.apache.org/dyn/closer.cgi?action=download&filename=aurora/%{version}/apache-aurora-%{version}.tar.gz#/apache-aurora-%{version}.tar.gz
+Source1:       aurora-scheduler.service
+Source2:       thermos.service
+Source3:       aurora-scheduler.init.sh
+Source4:       thermos.init.sh
+Source5:       aurora-scheduler.startup.sh
+Source6:       thermos.startup.sh
+Source7:       aurora-scheduler.sysconfig
+Source8:       thermos.sysconfig
+Source9:       aurora-scheduler.logrotate
+Source10:      thermos.logrotate
 Source11:      clusters.json
+Source12:      aurora-pants.ini
 
 BuildRequires: apr-devel
 BuildRequires: cyrus-sasl-devel
@@ -79,6 +84,7 @@ BuildRequires: git
 BuildRequires: java-%{JAVA_VERSION}-openjdk-devel
 BuildRequires: krb5-devel
 BuildRequires: libcurl-devel
+BuildRequires: openssl
 BuildRequires: patch
 %if 0%{?rhel} && 0%{?rhel} < 7
 BuildRequires: python27
@@ -127,6 +133,7 @@ Summary: Mesos executor that runs and monitors tasks scheduled by the Aurora sch
 Group: Applications/System
 
 Requires: mesos >= %{MESOS_VERSION}
+Requires: cyrus-sasl
 %if 0%{?rhel} && 0%{?rhel} < 7
 Requires: python27
 %else
@@ -141,8 +148,7 @@ state of all running tasks.
 
 
 %prep
-%setup -n apache-aurora-%{version}
-
+%setup -n apache-aurora-%{AURORA_INTERNAL_VERSION}
 
 %build
 # Preferences SCL-installed Python 2.7 if we're building on EL6.
@@ -169,7 +175,9 @@ unzip gradle-%{GRADLE_VERSION}-bin.zip
 
 # Configures pants to use our distributed platform-specific eggs.
 # This avoids building mesos to produce them.
-export PANTS_CONFIG_OVERRIDE="['/pants.ini']"
+%{__mkdir_p} %{buildroot}
+%{__cp} %{SOURCE12} %{buildroot}
+export PANTS_CONFIG_OVERRIDE="['%{buildroot}/aurora-pants.ini']"
 
 # Builds Aurora client PEX binaries.
 ./pants binary src/main/python/apache/aurora/kerberos:kaurora
@@ -214,21 +222,21 @@ done
 
 # Installs all support scripting.
 %if 0%{?fedora} || 0%{?rhel} > 6
-install -m 644 %{SOURCE1} %{buildroot}%{_sysconfdir}/systemd/system
-install -m 644 %{SOURCE2} %{buildroot}%{_sysconfdir}/systemd/system/thermos-observer.service
+install -m 644 %{SOURCE1} %{buildroot}%{_sysconfdir}/systemd/system/aurora-scheduler.service
+install -m 644 %{SOURCE2} %{buildroot}%{_sysconfdir}/systemd/system/thermos.service
 %else
-install -m 755 %{SOURCE3} %{buildroot}%{_sysconfdir}/init.d/aurora
-install -m 755 %{SOURCE4} %{buildroot}%{_sysconfdir}/init.d/thermos-observer
+install -m 755 %{SOURCE3} %{buildroot}%{_sysconfdir}/init.d/aurora-scheduler
+install -m 755 %{SOURCE4} %{buildroot}%{_sysconfdir}/init.d/thermos
 %endif
 
 install -m 755 %{SOURCE5} %{buildroot}%{_bindir}/aurora-scheduler-startup
-install -m 755 %{SOURCE6} %{buildroot}%{_bindir}/thermos-observer-startup
+install -m 755 %{SOURCE6} %{buildroot}%{_bindir}/thermos-startup
 
-install -m 644 %{SOURCE7} %{buildroot}%{_sysconfdir}/sysconfig/aurora
-install -m 644 %{SOURCE8} %{buildroot}%{_sysconfdir}/sysconfig/thermos-observer
+install -m 644 %{SOURCE7} %{buildroot}%{_sysconfdir}/sysconfig/aurora-scheduler
+install -m 644 %{SOURCE8} %{buildroot}%{_sysconfdir}/sysconfig/thermos
 
-install -m 644 %{SOURCE9} %{buildroot}%{_sysconfdir}/logrotate.d/aurora
-install -m 644 %{SOURCE10} %{buildroot}%{_sysconfdir}/logrotate.d/thermos-observer
+install -m 644 %{SOURCE9} %{buildroot}%{_sysconfdir}/logrotate.d/aurora-scheduler
+install -m 644 %{SOURCE10} %{buildroot}%{_sysconfdir}/logrotate.d/thermos
 
 install -m 644 %{SOURCE11} %{buildroot}%{_sysconfdir}/aurora/clusters.json
 
@@ -243,47 +251,47 @@ exit 0
 # Pre/post installation scripts:
 %post
 %if 0%{?fedora} || 0%{?rhel} > 6
-%systemd_post aurora.service
+%systemd_post aurora-scheduler.service
 %else
-/sbin/chkconfig --add aurora
+/sbin/chkconfig --add aurora-scheduler
 %endif
 
 %preun
 %if 0%{?fedora} || 0%{?rhel} > 6
-%systemd_preun aurora.service
+%systemd_preun aurora-scheduler.service
 %else
-/sbin/service aurora stop >/dev/null 2>&1
-/sbin/chkconfig --del aurora
+/sbin/service aurora-scheduler stop >/dev/null 2>&1
+/sbin/chkconfig --del aurora-scheduler
 %endif
 
 %postun
 %if 0%{?fedora} || 0%{?rhel} > 6
-%systemd_postun_with_restart aurora.service
+%systemd_postun_with_restart aurora-scheduler.service
 %else
-/sbin/service aurora start >/dev/null 2>&1
+/sbin/service aurora-scheduler start >/dev/null 2>&1
 %endif
 
 
 %post -n aurora-executor
 %if 0%{?fedora} || 0%{?rhel} > 6
-%systemd_post thermos-observer.service
+%systemd_post thermos.service
 %else
-/sbin/chkconfig --add thermos-observer
+/sbin/chkconfig --add thermos
 %endif
 
 %preun -n aurora-executor
 %if 0%{?fedora} || 0%{?rhel} > 6
-%systemd_preun thermos-observer.service
+%systemd_preun thermos.service
 %else
-/sbin/service thermos-observer stop >/dev/null 2>&1
-/sbin/chkconfig --del thermos-observer
+/sbin/service thermos stop >/dev/null 2>&1
+/sbin/chkconfig --del thermos
 %endif
 
 %postun -n aurora-executor
 %if 0%{?fedora} || 0%{?rhel} > 6
-%systemd_postun_with_restart thermos-observer.service
+%systemd_postun_with_restart thermos.service
 %else
-/sbin/service thermos-observer start >/dev/null 2>&1
+/sbin/service thermos start >/dev/null 2>&1
 %endif
 
 
@@ -297,12 +305,12 @@ exit 0
 %{_prefix}/lib/aurora/etc/*
 %{_prefix}/lib/aurora/lib/*
 %if 0%{?fedora} || 0%{?rhel} > 6
-%{_sysconfdir}/systemd/system/aurora.service
+%{_sysconfdir}/systemd/system/aurora-scheduler.service
 %else
-%{_sysconfdir}/init.d/aurora
+%{_sysconfdir}/init.d/aurora-scheduler
 %endif
-%config(noreplace) %{_sysconfdir}/logrotate.d/aurora
-%config(noreplace) %{_sysconfdir}/sysconfig/aurora
+%config(noreplace) %{_sysconfdir}/logrotate.d/aurora-scheduler
+%config(noreplace) %{_sysconfdir}/sysconfig/aurora-scheduler
 
 
 %files -n aurora-tools
@@ -318,19 +326,36 @@ exit 0
 %{_bindir}/thermos_executor
 %{_bindir}/thermos_observer
 %{_bindir}/thermos_runner
-%{_bindir}/thermos-observer-startup
+%{_bindir}/thermos-startup
 %{_localstatedir}/log/thermos
 %{_localstatedir}/run/thermos
 %if 0%{?fedora} || 0%{?rhel} > 6
-%{_sysconfdir}/systemd/system/thermos-observer.service
+%{_sysconfdir}/systemd/system/thermos.service
 %else
-%{_sysconfdir}/init.d/thermos-observer
+%{_sysconfdir}/init.d/thermos
 %endif
-%config(noreplace) %{_sysconfdir}/logrotate.d/thermos-observer
-%config(noreplace) %{_sysconfdir}/sysconfig/thermos-observer
+%config(noreplace) %{_sysconfdir}/logrotate.d/thermos
+%config(noreplace) %{_sysconfdir}/sysconfig/thermos
 
 
 %changelog
+* Mon Jun 21 2016 Apache Aurora <dev@aurora.apache.org> 0.13.0-1.el7
+- Updated to Apache Aurora 0.13.0
+- Renamed the aurora service and all associated configurations to
+  aurora-scheduler.
+- Renamed the thermos-observer service and all associated configurations
+  to thermos.
+- Changed the example cluster name from 'main' to 'example'.
+- Changed the default native_log_zk_group_path from '/aurora/native-log'
+  to '/aurora/replicated-log'.
+- Updated example clusters.json to include all mandatory options.
+
+* Mon Mar 7 2016 Apache Aurora <dev@aurora.apache.org> 0.12.0-1.el7
+- Updated to Apache Aurora 0.12.0
+
+* Wed Dec 23 2015 Apache Aurora <dev@aurora.apache.org> 0.11.0-1.el7
+- Updated to Apache Aurora 0.11.0
+
 * Wed Dec 2 2015 Bill Farner <wfarner@apache.org> 0.10.0-1.el7
 - Updated to Apache Aurora 0.10.0
 
