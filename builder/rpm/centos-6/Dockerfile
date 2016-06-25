@@ -11,7 +11,8 @@
 # limitations under the License.
 #
 FROM centos:6
-RUN yum install -y centos-release-SCL
+
+RUN yum install -y centos-release-scl
 RUN yum update -y
 RUN yum install -y \
     make \
