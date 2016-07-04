@@ -14,7 +14,7 @@
 
 # Overridable variables;
 %if %{?!AURORA_VERSION:1}0
-%global AURORA_VERSION 0.13.0
+%global AURORA_VERSION 0.14.0
 %endif
 
 %if %{?!AURORA_INTERNAL_VERSION:1}0
@@ -42,7 +42,7 @@
 %endif
 
 %if %{?!MESOS_VERSION:1}0
-%global MESOS_VERSION 0.26.0
+%global MESOS_VERSION 0.27.2
 %endif
 
 %if %{?!PEX_BINARIES:1}0
@@ -339,6 +339,9 @@ exit 0
 
 
 %changelog
+* Mon Jun 29 2016 Apache Aurora <dev@aurora.apache.org> 0.14.0-1.el7
+- Updated to Apache Aurora 0.14.0
+
 * Mon Jun 21 2016 Apache Aurora <dev@aurora.apache.org> 0.13.0-1.el7
 - Updated to Apache Aurora 0.13.0
 - Renamed the aurora service and all associated configurations to
