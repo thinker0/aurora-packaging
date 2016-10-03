@@ -27,6 +27,7 @@ RUN yum install -y \
     java-1.8.0-openjdk-devel \
     krb5-devel \
     libcurl-devel \
+    libffi-devel \
     openssl \
     patch \
     python27 \
