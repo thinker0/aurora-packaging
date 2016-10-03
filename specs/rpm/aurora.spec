@@ -153,6 +153,7 @@ state of all running tasks.
 %build
 # Preferences SCL-installed Python 2.7 if we're building on EL6.
 %if 0%{?rhel} && 0%{?rhel} < 7
+export PYTHON=/opt/rh/python27/root/usr/bin/python
 export PATH=/opt/rh/python27/root/usr/bin${PATH:+:${PATH}}
 export LD_LIBRARY_PATH=/opt/rh/python27/root/usr/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
 export MANPATH=/opt/rh/python27/root/usr/share/man:${MANPATH}
@@ -338,6 +339,9 @@ exit 0
 
 
 %changelog
+* Mon Jun 29 2016 Apache Aurora <dev@aurora.apache.org> 0.14.0-1.el7
+- Updated to Apache Aurora 0.14.0
+
 * Mon Jun 21 2016 Apache Aurora <dev@aurora.apache.org> 0.13.0-1.el7
 - Updated to Apache Aurora 0.13.0
 - Renamed the aurora service and all associated configurations to
