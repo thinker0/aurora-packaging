@@ -13,6 +13,7 @@
 FROM centos:6
 
 RUN yum install -y centos-release-scl
+RUN yum install -y https://centos6.iuscommunity.org/ius-release.rpm
 RUN yum update -y
 RUN yum install -y \
     make \
@@ -28,10 +29,11 @@ RUN yum install -y \
     krb5-devel \
     libcurl-devel \
     libffi-devel \
-    openssl \
+    openssl-devel \
     patch \
     python27 \
     python27-devel \
+    python27-backports \
     subversion-devel \
     tar \
     unzip \
@@ -44,4 +46,3 @@ RUN mkdir -p /usr/lib/jvm/java-8-openjdk-amd64/jre/lib/security
 RUN ln -s /etc/pki/java/cacerts /usr/lib/jvm/java-8-openjdk-amd64/jre/lib/security/cacerts
 
 ADD build.sh /build.sh
-ADD pants.ini /pants.ini

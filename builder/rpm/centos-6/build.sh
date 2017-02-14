@@ -22,10 +22,17 @@ tar --strip-components 1 -C src -xf /src.tar.gz
 
 cp -R /specs/rpm .
 cd rpm
+# python mesos centos 6
+cat << __EOF > ./SOURCES/aurora-pants.ini
+[GLOBAL]
+print_exception_stacktrace: True
+
+[python-repos]
+repos: ['third_party/', 'https://svn.apache.org/repos/asf/aurora/3rdparty/centos/6/python/']
+__EOF
 
 # Replace hyphens in version ID.
 export AURORA_VERSION=$(echo $AURORA_VERSION | tr '-' '_')
-export JAVA_HOME=/usr/lib/jvm/java-1.8.0
 
 make srpm
 yum-builddep -y ../../../dist/rpmbuild/SRPMS/*
