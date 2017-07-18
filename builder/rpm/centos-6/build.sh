@@ -15,16 +15,6 @@
 
 set -ex
 
-cat << __EOF > /etc/yum.repos.d/CentOS-SCLo-scl-rh.repo
-[kakao-scl]
-name=Kakao SCL
-baseurl=http://ftp.daumkakao.com/centos/6/sclo/x86_64/rh
-enabled=1
-gpgcheck=0
-proxy=_none_
-__EOF
-rm -f /etc/yum.repos.d/CentOS-SCLo-scl.repo
-
 mkdir -p /scratch/src
 cd /scratch
 
@@ -32,15 +22,6 @@ tar --strip-components 1 -C src -xf /src.tar.gz
 
 cp -R /specs/rpm .
 cd rpm
-# python mesos centos 6
-cat << __EOF > ./SOURCES/aurora-pants.ini
-[GLOBAL]
-print_exception_stacktrace: True
-
-[python-repos]
-repos: ['third_party/', 'https://svn.apache.org/repos/asf/aurora/3rdparty/centos/6/python/']
-__EOF
-
 # python mesos centos 6
 cat << __EOF > ./SOURCES/aurora-pants.ini
 [GLOBAL]
