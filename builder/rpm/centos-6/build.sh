@@ -15,16 +15,6 @@
 
 set -ex
 
-cat << __EOF > /etc/yum.repos.d/CentOS-SCLo-scl-rh.repo
-[kakao-scl]
-name=Kakao SCL
-baseurl=http://ftp.daumkakao.com/centos/6/sclo/x86_64/rh
-enabled=1
-gpgcheck=0
-proxy=_none_
-__EOF
-rm -f /etc/yum.repos.d/CentOS-SCLo-scl.repo
-
 mkdir -p /scratch/src
 cd /scratch
 
