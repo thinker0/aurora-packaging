@@ -25,6 +25,8 @@ cd rpm
 
 # Replace hyphens in version ID.
 export AURORA_VERSION=$(echo $AURORA_VERSION | tr '-' '_')
+export LC_ALL=en_US.UTF-8
+export LANG=en_US.UTF-8
 
 make srpm
 yum-builddep -y ../../../dist/rpmbuild/SRPMS/*
