@@ -1,7 +1,7 @@
-## Packaging for Apache Aurora
+## Packaging for Aurora Scheduler
 
 This repository maintains configuration and tooling for building binary
-distributions of [Apache Aurora](https://aurora.apache.org/).
+distributions of [Aurora Scheduler](https://aurora-scheduler.github.io/).
 
 ### Building a binary
 
@@ -9,7 +9,7 @@ Binaries are built within Docker containers that provide the appropriate build
 environment for the target platform.  You will need to have a working Docker
 installation before proceeding.
 
-1. Fetch a source distribution, such as an [official one](https://aurora.apache.org/downloads/).
+1. Fetch a source distribution, such as an [official one](https://aurora-scheduler.github.io/downloads/).
    Alternatively, you can also build from an arbitrary git commit by instead preparing sources
 from the Aurora source repository:
 
@@ -34,7 +34,7 @@ in order to proceed.
 
 #### Cut a branch and build the binaries
 
-The example below is for the 0.12.0 release where upstream is https://gitbox.apache.org/repos/asf/aurora-packaging:
+The example below is for the 0.12.0 release where upstream is https://github.com/aurora-scheduler/packaging
 
     git checkout -b 0.12.x upstream/master
 
